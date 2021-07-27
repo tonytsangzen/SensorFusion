@@ -12,8 +12,8 @@ $(target) : $(objects)
 	g++ --shared $^ $(library)  -o $@
 
 ndk:
-	export PATH=${PATH}:/Users/cengtao/Library/Android/sdk/ndk//19.2.5345600
 	ndk-build
 
 clean:
 	rm -rf libs *.o $(target)
+	ndk-build clean
