@@ -1,4 +1,4 @@
-target := libsensorfusion.so
+target := libfusion.so
 library := 
 objects += $(patsubst %.c*,%.o,$(wildcard *.c*))
 

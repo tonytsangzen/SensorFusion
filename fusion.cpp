@@ -16,9 +16,9 @@
 
 #include <stdio.h>
 #include "fusion.h"
-#include "sensor_type.h"
+#include "libfusion.h"
 
-#define DEBUG 1
+#define DEBUG 0
 #ifdef	DEBUG
 #ifdef __ANDORID__
 #include <android/log.h>

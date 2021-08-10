@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 #include "sensor_fusion.h"
-#include "sensor_type.h"
+#include "libfusion.h"
 
 #define DEBUG 1
 #ifdef	DEBUG
@@ -34,8 +34,8 @@ SensorFusion::SensorFusion()
     :mGyroTime(0), mAccTime(0)
 {
 
-    mEnabled[FUSION_9AXIS] = true;
-    mEnabled[FUSION_NOMAG] = true;
+    mEnabled[FUSION_9AXIS] = false;
+    mEnabled[FUSION_NOMAG] = false;
     mEnabled[FUSION_NOGYRO] = false;
 
     // 200 Hz for gyro events is a good compromise between precision
@@ -49,49 +49,65 @@ SensorFusion::SensorFusion()
 }
 
 
-void SensorFusion::process(const SensorData& event ) {
+void SensorFusion::process(const sf_data& data ) {
 
-    if (event.type == TYPE_GYROSCOPE) {
+    if (data.type == TYPE_GYROSCOPE) {
         float dT;
-        if ( event.timeStamp - mGyroTime> 0 &&
-             event.timeStamp - mGyroTime< (int64_t)(5e7) ) { //0.05sec
+        if ( data.timeStamp - mGyroTime > 0 &&
+             data.timeStamp - mGyroTime < (int64_t)(5e7) ) { //0.05sec
 
-            dT = (event.timeStamp - mGyroTime) / 1000000000.0f;
+            dT = (data.timeStamp - mGyroTime) / 1000000000.0f;
             // here we estimate the gyro rate (useful for debugging)
             const float freq = 1 / dT;
             if (freq >= 100 && freq<1000) { // filter values obviously wrong
                 const float alpha = 1 / (1 + dT); // 1s time-constant
                 mEstimatedGyroRate = freq + (mEstimatedGyroRate - freq)*alpha;
             }
+			
+			vec3_t gyro;
+            gyro.x = data.axis.x;
+            gyro.y = data.axis.y;
+            gyro.z = data.axis.z;
 
             for (int i = 0; i<NUM_FUSION_MODE; ++i) {
                 if (mEnabled[i]) {
                     // fusion in no gyro mode will ignore
-                    mFusions[i].handleGyro(event.data, dT);
+                    mFusions[i].handleGyro(gyro, dT);
                 }
             }
         }
-        mGyroTime = event.timeStamp;
-    } else if (event.type == TYPE_MAGNETIC_FIELD) {
+        mGyroTime = data.timeStamp;
+    } else if (data.type == TYPE_MAGNETIC_FIELD) {
+		
+		vec3_t mag;
+        mag.x = data.axis.x;
+        mag.y = data.axis.y;
+        mag.z = data.axis.z;
+
         for (int i = 0; i<NUM_FUSION_MODE; ++i) {
             if (mEnabled[i]) {
-                mFusions[i].handleMag(event.data);// fusion in no mag mode will ignore
+                mFusions[i].handleMag(mag);// fusion in no mag mode will ignore
             }
         }
-    } else if (event.type == TYPE_ACCELEROMETER) {
+    } else if (data.type == TYPE_ACCELEROMETER) {
         float dT;
-        if ( event.timeStamp - mAccTime> 0 &&
-                event.timeStamp - mAccTime< (int64_t)(1e8) ) { //0.1sec
-            dT = (event.timeStamp - mAccTime) / 1000000000.0f;
+        if ( data.timeStamp - mAccTime> 0 &&
+                data.timeStamp - mAccTime< (int64_t)(1e8) ) { //0.1sec
+            dT = (data.timeStamp - mAccTime) / 1000000000.0f;
+
+			vec3_t acc;
+	        acc.x = data.axis.x;
+	        acc.y = data.axis.y;
+	        acc.z = data.axis.z;
 
             for (int i = 0; i<NUM_FUSION_MODE; ++i) {
                 if (mEnabled[i]) {
-                    mFusions[i].handleAcc(event.data, dT);
+                    mFusions[i].handleAcc(acc, dT);
                     mAttitudes[i] = mFusions[i].getAttitude();
                 }
             }
         }
-        mAccTime = event.timeStamp;
+        mAccTime = data.timeStamp;
     }
 }
 

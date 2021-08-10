@@ -29,17 +29,8 @@ config.status
 config.sub
 *.swp
 doxygen.cfg
-examples/listdevs
-examples/xusb
-examples/dpfp
-examples/dpfp_threaded
-examples/fxload
-examples/hotplugtest
-examples/sam3u_benchmark
-examples/testlibusb
-tests/stress
-android/libs
-android/obj
+libs
+obj
 *.exe
 *.pc
 doc/api-1.0
@@ -55,6 +46,7 @@ Release
 *.opensdf
 *.patch
 *~
+*.so
 *.orig
 .dirstamp
 .amend

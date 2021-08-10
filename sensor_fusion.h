@@ -21,12 +21,7 @@
 #include <sys/types.h>
 
 #include "fusion.h"
-
-typedef struct _SensorData{
-	int type;
-	uint64_t timeStamp;
-	vec3_t data;
-}SensorData;
+#include "libfusion.h"
 
 class SensorFusion  {
 
@@ -40,13 +35,19 @@ class SensorFusion  {
 
 public:
     SensorFusion();
-    void process(const SensorData& sdata);
+    void process(const sf_data& sdata);
 
     bool isEnabled() const {
         return mEnabled[FUSION_9AXIS] ||
                 mEnabled[FUSION_NOMAG] ||
                 mEnabled[FUSION_NOGYRO];
     }
+
+	bool isEnable(int mode = FUSION_9AXIS) const {
+		if(mode >= NUM_FUSION_MODE)
+			return false;
+		return mEnabled[mode];
+	}
 
     bool hasEstimate(int mode = FUSION_9AXIS) const {
         return mFusions[mode].hasEstimate();
@@ -59,6 +60,14 @@ public:
     vec4_t getAttitude(int mode = FUSION_9AXIS) const {
         return mAttitudes[mode];
     }
+
+	long getTimeStamp(int mode = FUSION_9AXIS) const {
+		 if(mode == FUSION_NOMAG){
+			return mGyroTime;
+		 }else{
+			return mAccTime;
+		 }
+	}
 
     vec3_t getGyroBias() const { return mFusions[FUSION_9AXIS].getBias(); }
     float getEstimatedRate() const { return mEstimatedGyroRate; }

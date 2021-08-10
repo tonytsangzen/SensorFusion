@@ -20,7 +20,7 @@
 #include "quat.h"
 #include "mat.h"
 #include "vec.h"
-
+#include "libfusion.h"
 
 typedef mat<float, 3, 4> mat34_t;
 
@@ -30,7 +30,6 @@ enum FUSION_MODE{
     FUSION_NOGYRO, // use accel mag (geomag rotation)
     NUM_FUSION_MODE
 };
-
 class Fusion {
     /*
      * the state vector is made of two sub-vector containing respectively:
